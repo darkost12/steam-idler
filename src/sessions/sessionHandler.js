@@ -45,7 +45,7 @@ const sessionHandler = function(bot, thisbot, loginindex, logOnOptions) {
     this.session = null;
 
     // Load tokens database
-    this.tokensdb = new nedb({ filename: "./src/tokens.db", autoload: true });
+    this.tokensdb = new nedb({ filename: "./config/tokens.db", autoload: true });
 
     // Load helper files
     require("./events/sessionEvents");

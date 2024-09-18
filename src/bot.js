@@ -24,7 +24,7 @@ const EResult   = SteamUser.EResult;
 
 const sessionHandler = require("./sessions/sessionHandler.js");
 const controller     = require("./controller.js");
-const config         = require("../config.json");
+const config         = require("../config/config.json");
 
 
 /**
