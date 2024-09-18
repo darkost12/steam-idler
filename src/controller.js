@@ -20,7 +20,7 @@ const fs     = require("fs");
 const https  = require("https");
 const logger = require("output-logger");
 
-const config = require("../config.json");
+const config = require("../config/config.json");
 
 // Export both values to make them accessable from bot.js
 module.exports.nextacc    = 0;
@@ -47,8 +47,8 @@ function importLogininfo() {
         let logininfo = {};
 
         // Import data from accounts.txt
-        if (fs.existsSync("./accounts.txt")) {
-            let data = fs.readFileSync("./accounts.txt", "utf8").split("\n");
+        if (fs.existsSync("./config/accounts.txt")) {
+            let data = fs.readFileSync("./config/accounts.txt", "utf8").split("\n");
 
             if (data.length > 0 && data[0].startsWith("//Comment")) data = data.slice(1); // Remove comment from array
 
