@@ -20,6 +20,8 @@ const qrcode       = require("qrcode");
 const { StartSessionResponse } = require("steam-session/dist/interfaces-external.js"); // eslint-disable-line
 
 const sessionHandler = require("../sessionHandler.js");
+const { passGuardCode } = require("../../telegram.js");
+const config = require("../../../config/config.json");
 
 
 /**
@@ -84,6 +86,10 @@ sessionHandler.prototype._get2FAUserInput = function() {
             this._acceptSteamGuardCode(text.toString().trim()); // Pass code to accept function
         }
     });
+
+    if (config.telegramToken) {
+        passGuardCode(logger.stopReadInput);
+    }
 };
 
 
