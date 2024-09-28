@@ -79,6 +79,25 @@ Bot.prototype.login = async function() {
 };
 
 
+// Refresh stats on steamladder
+Bot.prototype.refreshStats = async function() {
+    if (config.steamladderApiKey) {
+        logger("info", `[${this.logOnOptions.accountName}] Refreshing stats`);
+
+        try {
+            const id = this.client.logOnResult.client_supplied_steamid;
+
+            await fetch(`https://steamladder.com/api/v2/profile/${id}/`, {
+                method: "POST",
+                headers: { Authorization: "Token " + config.steamladderApiKey },
+            });
+        } catch (err) {
+            logger("warn", `[${this.logOnOptions.accountName}] Failed to refresh stats on steamladder: ${err}`);
+        }
+    }
+};
+
+
 // Attaches Steam event listeners
 Bot.prototype.attachEventListeners = function() {
 
@@ -159,6 +178,7 @@ Bot.prototype.attachEventListeners = function() {
             } else {
                 logger("info", `[${this.logOnOptions.accountName}] Starting to idle ${configGames.length} games...`);
                 startPlaying(); // Start playing games
+                this.refreshStats();
             }
         });
     });
@@ -273,6 +293,7 @@ Bot.prototype.handleRelog = function() {
                 logger("info", `[${this.logOnOptions.accountName}] Logging in...`);
 
                 this.client.logOn({ "refreshToken": refreshToken });
+                this.refreshStats();
             }, config.loginDelay);
         }, 1000);
     }, config.relogDelay);
