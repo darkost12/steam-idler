@@ -87,12 +87,14 @@ Bot.prototype.refreshStats = async function() {
         try {
             const id = this.client.logOnResult.client_supplied_steamid;
 
-            await fetch(`https://steamladder.com/api/v2/profile/${id}/`, {
+            return await fetch(`https://steamladder.com/api/v2/profile/${id}/`, {
                 method: "POST",
                 headers: { Authorization: "Token " + config.steamladderApiKey },
             });
         } catch (err) {
             logger("warn", `[${this.logOnOptions.accountName}] Failed to refresh stats on steamladder: ${err}`);
+
+            return;
         }
     }
 };
@@ -126,61 +128,10 @@ Bot.prototype.attachEventListeners = function() {
         }
 
 
-        // Shorthander to start playing
-        const startPlaying = () => {
-            this.client.gamesPlayed(configGames);
-            this.startedPlayingTimestamp = Date.now();
-            this.playedAppIDs = configGames;
-        };
-
-        // Get all licenses this account owns
-        const options = {
-            includePlayedFreeGames: true,
-            filterAppids: configGames.filter(e => !isNaN(e)), // We only need to check for these appIDs. Filter custom game string
-            includeFreeSub: false
-        };
-
-        this.client.getUserOwnedApps(this.client.steamID, options, (err, res) => {
-            if (err) {
-                logger("error", `[${this.logOnOptions.accountName}] Failed to get owned apps! Attempting to play set appIDs anyways...`);
-
-                startPlaying(); // Start playing games
-                return;
-            }
-
-            // Check if we are missing a license
-            let missingLicenses = configGames.filter(e => !isNaN(e) && res.apps.filter(f => f.appid == e).length == 0);
-
-            // Redeem missing licenses or start playing if none are missing. Event will get triggered again on change.
-            if (missingLicenses.length > 0) {
-                // Check if we are missing more than 50 licenses (limit per hour) and cut array
-                if (missingLicenses.length > 50) {
-                    logger("warn", `[${this.logOnOptions.accountName}] This account is missing more than 50 licenses! Steam only allows registering 50 licenses per hour.\n                             I will register 50 licenses now and relog this account in 1 hour to register the next 50 licenses.`);
-                    missingLicenses = missingLicenses.splice(0, 50);
-
-                    setTimeout(() => {
-                        logger("info", `[${this.logOnOptions.accountName}] Relogging account to register the next 50 licenses...`);
-                        this.handleRelog();
-                    }, 3.6e+6 + 300000); // 1 hour plus 5 minutes for good measure
-                }
-
-                logger("info", `[${this.logOnOptions.accountName}] Requesting ${missingLicenses.length} missing license(s) before starting to play games set in config...`);
-
-                this.client.requestFreeLicense(missingLicenses, (err) => {
-                    if (err) {
-                        logger("error", `[${this.logOnOptions.accountName}] Failed to request missing licenses! Starting to play anyways...`);
-                        startPlaying(); // Start playing games
-                    } else {
-                        logger("info", `[${this.logOnOptions.accountName}] Successfully requested ${missingLicenses.length} missing game license(s)!`);
-                        setTimeout(() => startPlaying(), 2500);
-                    }
-                });
-            } else {
-                logger("info", `[${this.logOnOptions.accountName}] Starting to idle ${configGames.length} games...`);
-                startPlaying(); // Start playing games
-                this.refreshStats();
-            }
-        });
+        this.client.gamesPlayed(configGames);
+        this.startedPlayingTimestamp = Date.now();
+        this.playedAppIDs = configGames;
+        this.refreshStats();
     });
 
 
