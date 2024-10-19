@@ -65,7 +65,7 @@ module.exports = sessionHandler;
  */
 sessionHandler.prototype.getToken = function() { // I'm not allowed to use arrow styled functions here... (https://stackoverflow.com/questions/59344601/javascript-nodejs-typeerror-cannot-set-property-validation-of-undefined)
     return new Promise((resolve) => {
-        logger("debug", `[${this.thisbot}] getToken(): Created new object for token request`);
+        logger("debug", `[${this.thisbot}] getToken(): Created new object for token request`, false, true);
 
         // Save promise resolve function so any other function of this object can resolve the promise itself
         this.getTokenPromise = resolve;

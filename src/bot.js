@@ -60,8 +60,8 @@ module.exports = Bot;
 Bot.prototype.login = async function() {
 
     /* ------------ Login ------------ */
-    if (this.proxy) logger("info", `Logging in ${this.logOnOptions.accountName} in ${config.loginDelay / 1000} seconds with proxy '${this.proxy}'...`);
-        else logger("info", `Logging in ${this.logOnOptions.accountName} in ${config.loginDelay / 1000} seconds...`);
+    if (this.proxy) logger("info", `Logging in ${this.logOnOptions.accountName} in ${config.loginDelay / 1000} seconds with proxy '${this.proxy}'...`, false, true);
+        else logger("info", `Logging in ${this.logOnOptions.accountName} in ${config.loginDelay / 1000} seconds...`, false, true);
 
     // Generate steamGuardCode with shared secret if one was provided
     if (this.logOnOptions.sharedSecret) {
@@ -111,8 +111,6 @@ Bot.prototype.attachEventListeners = function() {
             logger("info", `[${this.logOnOptions.accountName}] Relog successful.`);
 
             controller.relogQueue.splice(controller.relogQueue.indexOf(this.loginindex), 1); // Remove this loginindex from the queue
-        } else {
-            logger("info", `[${this.logOnOptions.accountName}] Logged in! Checking for missing licenses...`);
         }
 
         // Set online status if enabled (https://github.com/DoctorMcKay/node-steam-user/blob/master/enums/EPersonaState.js)
