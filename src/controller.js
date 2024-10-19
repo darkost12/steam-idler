@@ -28,11 +28,11 @@ module.exports.relogQueue = []; // Queue tracking disconnected accounts to relog
 
 // Configure my logging lib
 logger.options({
-    msgstructure: `[${logger.Const.ANIMATION}] [${logger.Const.DATE} | ${logger.Const.TYPE}] ${logger.Const.MESSAGE}`,
+    msgstructure: `[${logger.Const.ANIMATION}] [${logger.Const.DATE} | ${logger.Const.TYPE}] ${logger.Const.MESSAGE}\n`,
     paramstructure: [logger.Const.TYPE, logger.Const.MESSAGE, "nodate", "remove", logger.Const.ANIMATION],
     outputfile: "./output.txt",
     exitmessage: "Goodbye!",
-    printdebug: false
+    printdebug: true
 });
 
 
@@ -42,7 +42,7 @@ logger.options({
  */
 function importLogininfo() {
     return new Promise((resolve) => {
-        logger("info", "Loading logininfo from accounts.txt...");
+        logger("info", "Loading logininfo from accounts.txt...", false, true);
 
         let logininfo = {};
 
@@ -103,7 +103,6 @@ function importProxies() {
 
             // Check if no proxies were found (can only be the case when useLocalIP is false)
             if (proxies.length == 0) {
-                logger("", "", true);
                 logger("error", "useLocalIP is turned off in config.json but I couldn't find any proxies in proxies.txt!\n        Aborting as I don't have at least one IP to log in with!", true);
                 return process.exit();
             }
@@ -159,8 +158,7 @@ const allBots = [];
 module.exports.start = async () => {
     global.logger = logger; // Make logger accessible from everywhere in this project
 
-    logger("", "", true, true);
-    logger("info", "steam-idler by 3urobeat v1.10\n");
+    logger("info", "steam-idler by 3urobeat v1.10");
 
     // Check for an update
     checkForUpdate();
