@@ -21,7 +21,7 @@ const { StartSessionResponse } = require("steam-session/dist/interfaces-external
 
 const sessionHandler = require("../sessionHandler.js");
 const { passGuardCode } = require("../../telegram.js");
-const config = require("../../../config/config.json");
+const config = require("../../../shared/config.json");
 
 
 /**

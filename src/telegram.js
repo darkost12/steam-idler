@@ -1,4 +1,4 @@
-const config = require("../config/config.json");
+const config = require("../shared/config.json");
 const { Telegraf } = require("telegraf");
 
 const passGuardCode = (callback) => {
