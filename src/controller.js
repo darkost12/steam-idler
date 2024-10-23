@@ -20,7 +20,7 @@ const fs     = require("fs");
 const https  = require("https");
 const logger = require("output-logger");
 
-const config = require("../config/config.json");
+const config = require("../shared/config.json");
 
 // Export both values to make them accessable from bot.js
 module.exports.nextacc    = 0;
@@ -30,7 +30,7 @@ module.exports.relogQueue = []; // Queue tracking disconnected accounts to relog
 logger.options({
     msgstructure: `[${logger.Const.ANIMATION}] [${logger.Const.DATE} | ${logger.Const.TYPE}] ${logger.Const.MESSAGE}\n`,
     paramstructure: [logger.Const.TYPE, logger.Const.MESSAGE, "nodate", "remove", logger.Const.ANIMATION],
-    outputfile: "./output.txt",
+    outputfile: "./shared/output.txt",
     exitmessage: "Goodbye!",
     printdebug: true
 });
@@ -47,8 +47,8 @@ function importLogininfo() {
         let logininfo = {};
 
         // Import data from accounts.txt
-        if (fs.existsSync("./config/accounts.txt")) {
-            let data = fs.readFileSync("./config/accounts.txt", "utf8").split("\n");
+        if (fs.existsSync("./shared/accounts.txt")) {
+            let data = fs.readFileSync("./shared/accounts.txt", "utf8").split("\n");
 
             if (data.length > 0 && data[0].startsWith("//Comment")) data = data.slice(1); // Remove comment from array
 

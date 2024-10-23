@@ -12,6 +12,6 @@ WORKDIR /steam-idler-main
 RUN set -ex ;\
   npm install
 
-ENV HOME=/steam-idler-main/config
+ENV HOME=/steam-idler-main/shared
 
 CMD node idler.js

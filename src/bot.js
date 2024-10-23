@@ -24,7 +24,7 @@ const EResult   = SteamUser.EResult;
 
 const sessionHandler = require("./sessions/sessionHandler.js");
 const controller     = require("./controller.js");
-const config         = require("../config/config.json");
+const config         = require("../shared/config.json");
 
 
 /**
@@ -82,7 +82,7 @@ Bot.prototype.login = async function() {
 // Refresh stats on steamladder
 Bot.prototype.refreshStats = async function() {
     if (config.steamladderApiKey) {
-        logger("info", `[${this.logOnOptions.accountName}] Refreshing stats`);
+        logger("info", `[${this.logOnOptions.accountName}] Refreshing stats`, false, true);
 
         try {
             const id = this.client.logOnResult.client_supplied_steamid;
@@ -92,7 +92,7 @@ Bot.prototype.refreshStats = async function() {
                 headers: { Authorization: "Token " + config.steamladderApiKey },
             });
         } catch (err) {
-            logger("warn", `[${this.logOnOptions.accountName}] Failed to refresh stats on steamladder: ${err}`);
+            logger("warn", `[${this.logOnOptions.accountName}] Failed to refresh stats on steamladder: ${err}`, false, true);
 
             return;
         }
@@ -126,7 +126,7 @@ Bot.prototype.attachEventListeners = function() {
         }
 
 
-        logger("info", `[${this.logOnOptions.accountName}] Starting to idle ${configGames.length} games...`);
+        logger("info", `[${this.logOnOptions.accountName}] Starting to idle ${configGames.length} games...`, false, true);
         this.client.gamesPlayed(configGames);
         this.startedPlayingTimestamp = Date.now();
         this.playedAppIDs = configGames;
@@ -262,7 +262,7 @@ Bot.prototype.logPlaytimeToFile = function() {
         // Append session summary to playtime.txt
         const str = `[${this.logOnOptions.accountName}] Session Summary (${formatDate(this.startedPlayingTimestamp)} - ${formatDate(Date.now())}) ~ Played for ${Math.trunc((Date.now() - this.startedPlayingTimestamp) / 1000)} seconds: ${util.inspect(this.playedAppIDs, false, 2, false)}`; // Inspect() formats array properly
 
-        fs.appendFileSync("./playtime.txt", str + "\n");
+        fs.appendFileSync("./shared/playtime.txt", str + "\n");
     }
 
     // Reset startedPlayingTimestamp
