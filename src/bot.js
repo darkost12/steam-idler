@@ -126,6 +126,7 @@ Bot.prototype.attachEventListeners = function() {
         }
 
 
+        logger("info", `[${this.logOnOptions.accountName}] Starting to idle ${configGames.length} games...`);
         this.client.gamesPlayed(configGames);
         this.startedPlayingTimestamp = Date.now();
         this.playedAppIDs = configGames;
