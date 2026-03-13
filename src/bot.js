@@ -42,6 +42,8 @@ const Bot = function(logOnOptions, loginindex, proxies) {
     // Populated by loggedOn event handler, is used by logPlaytime to calculate playtime report for this account
     this.startedPlayingTimestamp = 0;
     this.playedAppIDs = [];
+    this.connectionWatchdogInterval = null;
+    this.idleRefreshInterval = null;
 
     // Create new steam-user bot object. Disable autoRelogin as we have our own queue system
     this.client = new SteamUser({ autoRelogin: false, renewRefreshTokens: true, httpProxy: this.proxy, protocol: SteamUser.EConnectionProtocol.WebSocket }); // Forcing protocol for now: https://dev.doctormckay.com/topic/4187-disconnect-due-to-encryption-error-causes-relog-to-break-error-already-logged-on/?do=findComment&comment=10917
@@ -131,6 +133,8 @@ Bot.prototype.attachEventListeners = function() {
         this.startedPlayingTimestamp = Date.now();
         this.playedAppIDs = configGames;
         this.refreshStats();
+        this.startConnectionWatchdog();
+        this.startIdleRefresh();
     });
 
 
@@ -268,5 +272,40 @@ Bot.prototype.logPlaytimeToFile = function() {
     // Reset startedPlayingTimestamp
     this.startedPlayingTimestamp = 0;
     this.playedAppIDs = [];
+};
 
+Bot.prototype.startConnectionWatchdog = function () {
+    if (this.connectionWatchdogInterval) {
+        clearInterval(this.connectionWatchdogInterval);
+    }
+
+    this.connectionWatchdogInterval = setInterval(() => {
+        if (controller.relogQueue.includes(this.loginindex)) return;
+
+        const last = this.client._connection?._lastReceivedTime;
+
+        if (!last) return;
+
+        const diff = Date.now() - last;
+
+        if (diff > 120000) {
+            logger("warn", `[${this.logOnOptions.accountName}] Watchdog detected stalled connection (${diff} ms). Relogging...`);
+            this.handleRelog();
+        }
+    }, 60000);
+};
+
+Bot.prototype.startIdleRefresh = function () {
+    if (this.idleRefreshInterval) {
+        clearInterval(this.idleRefreshInterval);
+    }
+
+    this.idleRefreshInterval = setInterval(() => {
+        if (!this.playedAppIDs.length) return;
+
+        this.client.gamesPlayed([]);
+        setTimeout(() => {
+            this.client.gamesPlayed(this.playedAppIDs);
+        }, 1000);
+    }, 900000);
 };
