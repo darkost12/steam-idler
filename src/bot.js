@@ -34,7 +34,6 @@ const config         = require("../shared/config.json");
  * @param proxies
  */
 const Bot = function(logOnOptions, loginindex, proxies) {
-
     this.logOnOptions = logOnOptions;
     this.loginindex   = loginindex;
     this.proxy        = proxies[loginindex % proxies.length]; // Spread all accounts equally with a simple modulo calculation
@@ -57,10 +56,8 @@ const Bot = function(logOnOptions, loginindex, proxies) {
 
 module.exports = Bot;
 
-
 // Handles logging in this account
 Bot.prototype.login = async function() {
-
     /* ------------ Login ------------ */
     if (this.proxy) logger("info", `Logging in ${this.logOnOptions.accountName} in ${config.loginDelay / 1000} seconds with proxy '${this.proxy}'...`, false, true);
         else logger("info", `Logging in ${this.logOnOptions.accountName} in ${config.loginDelay / 1000} seconds...`, false, true);
@@ -77,7 +74,6 @@ Bot.prototype.login = async function() {
     if (!refreshToken) return; // Stop execution if getToken aborted login attempt
 
     setTimeout(() => this.client.logOn({ "refreshToken": refreshToken }), config.loginDelay); // Log in with logOnOptions
-
 };
 
 
@@ -101,10 +97,8 @@ Bot.prototype.refreshStats = async function() {
     }
 };
 
-
 // Attaches Steam event listeners
 Bot.prototype.attachEventListeners = function() {
-
     this.client.on("loggedOn", () => { // This account is now logged on
         controller.nextacc++; // The next account can start
 
@@ -189,7 +183,6 @@ Bot.prototype.attachEventListeners = function() {
             controller.nextacc++; // The next account can start
 
         } else { // Connection loss
-
             // If error occurred during relog (aka logOn gave up because connection is still down), move account to the back of the queue and call handleRelog again
             if (controller.relogQueue.includes(this.loginindex)) {
                 logger("warn", `[${this.logOnOptions.accountName}] Failed to relog. Repositioning to the back of the queue and trying again. ${err}`);
@@ -208,9 +201,28 @@ Bot.prototype.attachEventListeners = function() {
 
         this.session._saveTokenToStorage(newToken);
     });
-
 };
 
+Bot.prototype.recreateClient = function () {
+    try {
+        this.client.removeAllListeners();
+        this.client.logOff();
+    } catch (e) {
+        logger(
+            "warn",
+            `[${this.logOnOptions.accountName}] Failed to remove all listeners or log off: ${e}`
+        );
+    }
+
+    this.client = new SteamUser({
+        autoRelogin: false,
+        renewRefreshTokens: true,
+        httpProxy: this.proxy,
+        protocol: SteamUser.EConnectionProtocol.WebSocket
+    });
+
+    this.attachEventListeners();
+};
 
 /**
  * Handles relogging this bot account
@@ -229,10 +241,11 @@ Bot.prototype.handleRelog = function() {
         const relogInterval = setInterval(() => {
             if (controller.relogQueue.indexOf(this.loginindex) != 0) return; // Not our turn? stop and retry in the next iteration
 
-            clearInterval(relogInterval); // Prevent any retries
-            this.client.logOff();
+            clearInterval(relogInterval);
 
-            logger("info", `[${this.logOnOptions.accountName}] It is now my turn. Relogging in ${config.loginDelay / 1000} seconds...`);
+            this.recreateClient();
+
+            logger("info", `[${this.logOnOptions.accountName}] Client recreated. Relogging in ${config.loginDelay / 1000} seconds...`);
 
             // Attach relogdelay timeout
             setTimeout(async () => {
@@ -252,7 +265,6 @@ Bot.prototype.handleRelog = function() {
         }, 1000);
     }, config.relogDelay);
 };
-
 
 // Logs playtime to playtime.txt file
 Bot.prototype.logPlaytimeToFile = function() {
