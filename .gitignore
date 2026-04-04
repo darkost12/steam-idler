@@ -3,3 +3,4 @@ node_modules
 steam-idler.code-workspace
 shared/*
 !shared/.gitkeep
+.vscode
