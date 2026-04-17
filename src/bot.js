@@ -397,6 +397,10 @@ Bot.prototype.handleRelog = function() {
                     "warn",
                     `[${this.logOnOptions.accountName}] Login timeout exceeded (60s). Steam server may be down for maintenance. Forcing relog...`,
                 );
+                // Remove from relog queue first so handleRelog() can re-add and retry (account is at pos 0 here)
+                const queueIdx = controller.relogQueue.indexOf(this.loginindex);
+                if (queueIdx !== -1) controller.relogQueue.splice(queueIdx, 1);
+
                 this.handleRelog();
             }
             }, 60000);
